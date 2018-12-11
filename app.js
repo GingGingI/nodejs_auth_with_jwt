@@ -10,12 +10,15 @@ const app = express();
 app.use(express.json());
 app.use(morgan('dev'));
 
+// jwt-secret이란 이름으로 config.key 가져옮
 app.set('jwt-secret', config.key);
 
+// index Page
 app.get('/', (req, res) => {
-  res.send('jwtTest');
+  res.send('Hihello');
 });
 
+// /api로 들어갈시 ./api에있는 index라우터를 사용.
 app.use('/api', require('./api'));
 
 app.listen(port, () => {

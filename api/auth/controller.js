@@ -8,12 +8,12 @@ const User = require('../../models/user');
         password
     }
 */
-
+// 회원가입
 exports.register = (req, res) => {
   const { username, password } = req.body;
   let newUser = null;
 
-  // create a new user if does not exist
+  // user를 받아와 없으면 에러 있으면 create
   const create = (user) => {
     if (user) {
       throw new Error('username exists');
@@ -22,22 +22,22 @@ exports.register = (req, res) => {
     }
   };
 
-  // count the number of the user
+  // DB에서 유저수를 가져옮.
   const count = (user) => {
     newUser = user;
     return User.count({}).exec();
   };
 
-  // assign admin if count is 1
+  // 첫번째 유저일경우 어드민으로 설정.
   const assign = (cnt) => {
     if (cnt === 1) {
       return newUser.assignAdmin();
     }
-    // if not, return a promise that returns false
+    // 아닐경우 false값을 가진 promise 리턴
     return Promise.resolve(false);
   };
 
-  // respond to the client
+  // 클라이언트로 respond
   const respond = (isAdmin) => {
     res.json({
       message: 'registered successfully',
@@ -45,14 +45,14 @@ exports.register = (req, res) => {
     });
   };
 
-  // run when there is an error (username exists)
+  // 에러가 날경우 실행 (예: 유저이름 중복)
   const onError = (error) => {
     res.status(409).json({
       message: error.message,
     });
   };
 
-  // check username duplication
+  // 유저네임 체크.
   User.findOneByUsername(username)
     .then(create)
     .then(count)
@@ -65,10 +65,12 @@ exports.login = (req, res) => {
   const { username, password } = req.body;
   const secret = req.app.get('jwt-secret');
 
+  // 유저를 가져와서 체크 없을시 에러
   const check = (user) => {
     if (!user) {
       throw new Error('login failed');
     } else if (user.verify(password)) {
+      // header | 시크릿코드 | body
       const promise = new Promise((resolve, reject) => {
         jwt.sign(
           {
@@ -82,6 +84,7 @@ exports.login = (req, res) => {
             issuer: 'jwtTokenAuthTest',
             subject: 'userInfo',
           }, (err, token) => {
+            // 에러받으면 reject(에러) 처리
             if (err) reject(err);
             resolve(token);
           },
@@ -94,6 +97,7 @@ exports.login = (req, res) => {
   };
 
   const respond = (token) => {
+    // 로그인 할시 해당토큰값 출력
     res.json({
       message: 'login success',
       token,
