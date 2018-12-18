@@ -25,6 +25,7 @@ app.listen(port, () => {
   console.log(`Express is running on port ${port}`);
 });
 
+// 몽고DB 커넥트
 mongoose.connect(config.mongodb);
 const db = mongoose.connection;
 db.on('err', console.error);
